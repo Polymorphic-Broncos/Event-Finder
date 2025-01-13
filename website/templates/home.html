@@ -1,0 +1,39 @@
+{% extends "base.html" %} {% block title %}Home{% endblock %} {% block content
+  %}
+<h1 align="center">Cal Poly Pomona Event Finder</h1>
+
+<form method="POST">
+  <div align="right">
+    <button type="submit" style="margin:10px" class="btn btn-primary">Create Event</button>
+  </div>
+</form>
+
+<!--
+<ul class="list-group list-group-flush" id="notes">
+  {% for note in user.notes %}
+  <li class="list-group-item">
+    {{ note.data }}
+    <button type="button" class="close" onClick="deleteNote({{ note.id }})">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </li>
+  {% endfor %}
+</ul>
+-->
+
+<div class="form-group">
+  <input
+    type="search"
+    class="form-control"
+    id="search"
+    name="search"
+    placeholder="Search event"
+  />
+</div>
+
+<form method="POST">
+  <div align="center">
+    <button type="submit" class="btn btn-primary">Search</button>
+  </div>
+</form>
+{% endblock %}
