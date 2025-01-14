@@ -1,16 +1,18 @@
 from . import db
 from flask_login import UserMixin
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 from sqlalchemy.sql import func
 
 
 class Event(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = db.Column(db.String(150))
-    data = db.Column(db.String(10000))
-    date = db.Column(db.DateTime(timezone=True), default=func.now())
-    #location = db.Column(db.String(150))
-    #category = db.Column(db.String(150))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    #date = db.Column(db.DateTime(timezone=True), default=func.now())
+    dateTime = db.Column(db.DateTime(timezone=True))
+    location = db.Column(db.String(150))
+    category = db.Column(db.String(150))
+    userID = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
