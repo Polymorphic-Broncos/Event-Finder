@@ -64,6 +64,14 @@ def createEvent():
     
     return render_template("create_event.html", user=current_user)
 
+@views.route('/my-events', methods=['GET', 'POST'])
+@login_required
+def myEvents():
+    if request.method == 'POST': 
+        pass
+    
+    return render_template("my_events.html", user=current_user)
+
 '''
 #@views.route('/delete-note', methods=['POST'])
 def delete_note():  
