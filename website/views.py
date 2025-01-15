@@ -1,11 +1,12 @@
-from flask import Blueprint, render_template, request, flash, jsonify, session
+from flask import Blueprint, render_template, request, flash, jsonify, session, redirect, url_for
 from flask_login import login_required, current_user
 from flask import render_template_string
-from .models import Event
+from .models import Event, User
 from . import db
 import json
 import datetime
 import uuid
+from sqlalchemy import func, cast, Date, Time
 
 views = Blueprint('views', __name__)
 
@@ -24,11 +25,30 @@ def home():
             events = db.session.query(Event).filter(Event.name == search).all()
 
         elif filter == "Date":
-            #search = datetime.date(search)
-            events = db.session.query(Event).filter(Event.dateTime == search).all() # Date and time incomplete!
+            try:
+                # Convert the search string to a date object
+                search_date = datetime.datetime.strptime(search, "%Y-%m-%d").date()
+                # Query events for the specific date
+                events = db.session.query(Event).filter(
+                    func.date(Event.dateTime) == search_date
+                ).all()
+            except ValueError:
+                flash('Please enter date in YYYY-MM-DD format', category='error')
+                events = []
 
         elif filter == "Time":
-            events = db.session.query(Event).filter(Event.dateTime == search).all() # Date and time incomplete!
+            try:
+                # Convert the search string to a time object with seconds
+                search_time = datetime.datetime.strptime(search, "%H:%M:%S").time()
+                
+                # Extract hour and minute for comparison
+                events = db.session.query(Event).filter(
+                    func.extract('hour', Event.dateTime) == search_time.hour,
+                    func.extract('minute', Event.dateTime) == search_time.minute
+                ).all()
+            except ValueError:
+                flash('Please enter time in HH:MM:SS format (24-hour)', category='error')
+                events = []
 
         elif filter == "Location":
             events = db.session.query(Event).filter(Event.location == search).all()
@@ -138,17 +158,3 @@ def bookmarkedEvents():
         pass
     
     return render_template("bookmarked_events.html", user=current_user)
-
-'''
-@views.route('/delete-note', methods=['POST'])
-def delete_note():  
-    note = json.loads(request.data) # this function expects a JSON from the INDEX.js file 
-    noteId = note['noteId']
-    note = Note.query.get(noteId)
-    if note:
-        if note.user_id == current_user.id:
-            db.session.delete(note)
-            db.session.commit()
-
-    return jsonify({})
-'''
