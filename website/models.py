@@ -21,3 +21,4 @@ class User(db.Model, UserMixin):
     first_name = db.Column(db.String(150))
     #is_Organizer = db.Column(db.Boolean, unique=False, default=True)
     events = db.relationship('Event')
+    bookmarkedEvents = db.relationship('Event')

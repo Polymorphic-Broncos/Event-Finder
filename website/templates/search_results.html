@@ -1,0 +1,24 @@
+{% extends "base.html" %} {% block title %}Search Results{% endblock %} {% block content
+%}
+<h1 align="center">Search Results</h1>
+<div align="center">
+<ul class="list-group list-group-flush" id="events">
+  {% for event in resultList %}
+  <li class="list-group-item">
+    {{ event.name }}
+    {{ event.dateTime }}
+    {{ event.location }}
+    {{ event.category }}
+    <button type="button" class="btn btn-secondary" onClick="sendEvent('{{ event.id }}')">View</button>
+  </li>
+  {% endfor %}
+</ul>
+</div>
+
+<br/>
+
+<div align="center">
+  <a href="/"><button type="submit" class="btn btn-primary">Home</button></a>
+</div>
+
+{% endblock %}

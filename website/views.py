@@ -12,15 +12,45 @@ views = Blueprint('views', __name__)
 @views.route('/', methods=['GET', 'POST'])
 @login_required
 def home():
-    if request.method == 'POST': 
-        pass
+    if request.method == 'POST':
+
+        filter = request.form.get("filter")
+        search = request.form.get("search")
+        print(f"User searched: {filter}: {search}")
+
+        events = []
+
+        if filter == "Name":
+            events = db.session.query(Event).filter(Event.name == search).all()
+
+        elif filter == "Date":
+            #search = datetime.date(search)
+            events = db.session.query(Event).filter(Event.dateTime == search).all() # Date and time incomplete!
+
+        elif filter == "Time":
+            events = db.session.query(Event).filter(Event.dateTime == search).all() # Date and time incomplete!
+
+        elif filter == "Location":
+            events = db.session.query(Event).filter(Event.location == search).all()
+
+        elif filter == "Category":
+            events = db.session.query(Event).filter(Event.category == search).all()
+
+        else:
+            print("Error")
+
+        print(events)
+        if len(events) == 0:
+            flash('No results found', category='error')
+        else:
+            flash(f"{len(events)} results found", category='success')
+            return render_template("search_results.html", user=current_user, resultList=events)
+
 
     # Recommended
-    events = Event.query.all()
-    for event in events:
-        print(event)
+    recommendedList = Event.query.all()
 
-    return render_template("home.html", user=current_user, eventList=events)
+    return render_template("home.html", user=current_user, eventList=recommendedList)
 
 @views.route('/create-event', methods=['GET', 'POST'])
 @login_required
@@ -33,17 +63,22 @@ def createEvent():
         eventLocation = request.form.get("eventLocation")
         eventCategory = request.form.get("eventCategory")
 
-        dateTimeObj = datetime.datetime.strptime(eventDate + " " + eventTime, "%Y-%m-%d %H:%M")
+        if eventName and eventDate and eventTime and eventLocation and eventCategory:
 
-        print(f"Create event with: {eventName}, {dateTimeObj}, {eventLocation}, {eventCategory}")
+            dateTimeObj = datetime.datetime.strptime(eventDate + " " + eventTime, "%Y-%m-%d %H:%M")
 
-        newEvent = Event(name=eventName, dateTime=dateTimeObj, location=eventLocation, category=eventCategory, userID=current_user.id)
-        db.session.add(newEvent)
-        db.session.commit()
-        flash('Event Created!', category='success')
+            print(f"Create event with: {eventName}, {dateTimeObj}, {eventLocation}, {eventCategory}")
 
-        return render_template("my_events.html", user=current_user)
-    
+            newEvent = Event(name=eventName, dateTime=dateTimeObj, location=eventLocation, category=eventCategory, userID=current_user.id)
+            db.session.add(newEvent)
+            db.session.commit()
+            flash('Event Created!', category='success')
+
+            return render_template("my_events.html", user=current_user)
+        
+        else:
+            flash('Please fill out all the fields', category='error')
+
     return render_template("create_event.html", user=current_user)
 
 @views.route('/my-events', methods=['GET', 'POST'])
@@ -84,15 +119,25 @@ def send_event():
 @views.route('/view-event', methods=['GET', 'POST'])
 @login_required
 def viewEvent():
-    if request.method == 'POST': 
-        pass
-    
+
     eventID = uuid.UUID(session['eventID'])
     #print(f"Event ID: {eventID}")
     event = Event.query.get(eventID)
+
+    # NEED TO IMPLEMENT BOOKMARKING
+    if request.method == 'POST': 
+        print(f"Event: {event.name} bookmarked!")
+
     
     return render_template("view-event.html", user=current_user, viewedEvent=event)
 
+@views.route('/bookmarked-events', methods=['GET', 'POST'])
+@login_required
+def bookmarkedEvents():
+    if request.method == 'POST': 
+        pass
+    
+    return render_template("bookmarked_events.html", user=current_user)
 
 '''
 @views.route('/delete-note', methods=['POST'])
