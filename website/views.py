@@ -4,6 +4,7 @@ from .models import Event
 from . import db
 import json
 import datetime
+import uuid
 
 views = Blueprint('views', __name__)
 
@@ -16,18 +17,6 @@ def home():
         events = Event.query.all()
         for event in events:
             print(event)
-
-        pass
-        #note = request.form.get('note')#Gets the note from the HTML 
-
-        #if len(note) < 1:
-            #flash('Note is too short!', category='error') 
-        #else:
-            #new_note = Note(data=note, user_id=current_user.id)  #providing the schema for the note 
-            #db.session.add(new_note) #adding the note to the database 
-            #db.session.commit()
-            #flash('Note added!', category='success')
-        
 
     return render_template("home.html", user=current_user)
 
@@ -51,16 +40,7 @@ def createEvent():
         db.session.commit()
         flash('Event Created!', category='success')
 
-        #note = request.form.get('note')#Gets the note from the HTML
-        #if len(note) < 1:
-            #flash('Note is too short!', category='error') 
-        #else:
-            #new_note = Note(data=note, user_id=current_user.id)  #providing the schema for the note 
-            #db.session.add(new_note) #adding the note to the database 
-            #db.session.commit()
-            #flash('Note added!', category='success')
-
-        return render_template("home.html", user=current_user)
+        return render_template("my_events.html", user=current_user)
     
     return render_template("create_event.html", user=current_user)
 
@@ -72,8 +52,26 @@ def myEvents():
     
     return render_template("my_events.html", user=current_user)
 
+@views.route('/delete-event', methods=['POST'])
+@login_required
+def delete_event():  
+    eventDict = json.loads(request.data) # this function expects a JSON from the INDEX.js file 
+    eventId = uuid.UUID(eventDict['eventId'])
+    #print(f"Event ID: {eventId}")
+    #print(f"Event ID type: {type(eventId)}")
+    event = Event.query.get(eventId)
+    if event:
+        if event.userID == current_user.id:
+            db.session.delete(event)
+            db.session.commit()
+    else:
+        print("Event not found!")
+
+    return jsonify({})
+
+
 '''
-#@views.route('/delete-note', methods=['POST'])
+@views.route('/delete-note', methods=['POST'])
 def delete_note():  
     note = json.loads(request.data) # this function expects a JSON from the INDEX.js file 
     noteId = note['noteId']
