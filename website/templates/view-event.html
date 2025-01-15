@@ -1,0 +1,28 @@
+{% extends "base.html" %} {% block title %}Event Info{% endblock %} {% block content
+%}
+<h1 align="center">Event Info</h1>
+<br/>
+<br/>
+<h2 align="center">Event Name</h2>
+<h3 align="center">{{ viewedEvent.name }}</h3>
+<br/>
+<h2 align="center">Event Date</h2>
+<h3 align="center">{{ viewedEvent.dateTime.date() }}</h3>
+<br/>
+<h2 align="center">Event Time</h2>
+<h3 align="center">{{ viewedEvent.dateTime.time() }}</h3>
+<br/>
+<h2 align="center">Event Location</h2>
+<h3 align="center">{{ viewedEvent.location }}</h3>
+<br/>
+<h2 align="center">Event Category</h2>
+<h3 align="center">{{ viewedEvent.category }}</h3>
+<br/>
+<div align="center">
+  <a href="/"><button type="submit" class="btn btn-primary">Bookmark</button></a>
+</div>
+<br/>
+<div align="center">
+  <a href="/"><button type="submit" class="btn btn-primary">Home</button></a>
+</div>
+{% endblock %}

@@ -1,5 +1,5 @@
 {% extends "base.html" %} {% block title %}Create Event{% endblock %} {% block content
-  %}
+%}
 <h1 align="center">Cal Poly Pomona Event Finder</h1>
 
 <!--
@@ -41,4 +41,19 @@
     <button type="submit" class="btn btn-primary">Search</button>
   </div>
 </form>
+
+<br/>
+
+<h2 align="center">Recommended Events</h2>
+<div align="center">
+<ul class="list-group list-group-flush" id="events">
+  {% for event in eventList %}
+  <li class="list-group-item">
+    {{ event.name }}
+    <button type="button" class="btn btn-secondary" onClick="sendEvent('{{ event.id }}')">View</button>
+    <!--<a href="/view-event"><button>View 2</button></a>-->
+  </li>
+  {% endfor %}
+</ul>
+</div>
 {% endblock %}
