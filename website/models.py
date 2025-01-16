@@ -19,6 +19,15 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(150), unique=True)
     password = db.Column(db.String(150))
     first_name = db.Column(db.String(150))
-    #is_Organizer = db.Column(db.Boolean, unique=False, default=True)
-    events = db.relationship('Event')
-    bookmarkedEvents = db.relationship('Event')
+    # Events created by the user
+    created_events = db.relationship('Event', backref='creator', foreign_keys=[Event.userID])
+    # Events bookmarked by the user
+    bookmarkedEvents = db.relationship('Event', 
+                                     secondary='bookmarks',  # Create a new association table
+                                     backref='bookmarked_by')
+
+# Create a new association table for bookmarks
+bookmarks = db.Table('bookmarks',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('event_id', UUID(as_uuid=True), db.ForeignKey('event.id'))
+)

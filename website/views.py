@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, jsonify, session, redirect, url_for
 from flask_login import login_required, current_user
 from flask import render_template_string
-from .models import Event, User
+from .models import Event, User, bookmarks
 from . import db
 import json
 import datetime
@@ -104,10 +104,9 @@ def createEvent():
 @views.route('/my-events', methods=['GET', 'POST'])
 @login_required
 def myEvents():
-    if request.method == 'POST': 
-        pass
-    
-    return render_template("my_events.html", user=current_user)
+    # Show only events created by the user
+    created_events = Event.query.filter_by(userID=current_user.id).all()
+    return render_template("my_events.html", user=current_user, eventList=created_events)
 
 @views.route('/delete-event', methods=['POST'])
 @login_required
@@ -139,22 +138,53 @@ def send_event():
 @views.route('/view-event', methods=['GET', 'POST'])
 @login_required
 def viewEvent():
-
     eventID = uuid.UUID(session['eventID'])
-    #print(f"Event ID: {eventID}")
     event = Event.query.get(eventID)
 
-    # NEED TO IMPLEMENT BOOKMARKING
     if request.method == 'POST': 
-        print(f"Event: {event.name} bookmarked!")
-
+        # Check if event is already bookmarked
+        user = User.query.get(current_user.id)
+        if event not in user.bookmarkedEvents:
+            user.bookmarkedEvents.append(event)
+            db.session.commit()
+            flash('Event bookmarked successfully!', category='success')
+            print(f"Event: {event.name} bookmarked!")
+        else:
+            flash('Event already bookmarked!', category='error')
     
     return render_template("view-event.html", user=current_user, viewedEvent=event)
 
 @views.route('/bookmarked-events', methods=['GET', 'POST'])
 @login_required
 def bookmarkedEvents():
-    if request.method == 'POST': 
-        pass
+    # Show only bookmarked events
+    bookmarked = current_user.bookmarkedEvents
+    return render_template("bookmarked_events.html", user=current_user, bookmarkedList=bookmarked)
+
+@views.route('/remove-bookmark', methods=['POST'])
+@login_required
+def remove_bookmark():
+    eventDict = json.loads(request.data)
+    eventId = uuid.UUID(eventDict['eventId'])
+    event = Event.query.get(eventId)
+    user = User.query.get(current_user.id)
     
-    return render_template("bookmarked_events.html", user=current_user)
+    if event and event in user.bookmarkedEvents:
+        user.bookmarkedEvents.remove(event)
+        db.session.commit()
+        flash('Event removed from bookmarks!', category='success')
+    
+    return jsonify({})
+
+@views.route('/cleanup', methods=['GET'])
+def cleanup():
+    # Delete all events first (due to foreign key constraints)
+    Event.query.delete()
+    # Delete the bookmarks table entries
+    db.session.execute(bookmarks.delete())
+    # Delete all users
+    User.query.delete()
+    # Commit the changes
+    db.session.commit()
+    flash('Database cleaned!', category='success')
+    return redirect(url_for('auth.login'))
